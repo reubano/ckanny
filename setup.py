@@ -49,7 +49,7 @@ sys.dont_write_bytecode = True
 requirements = list(parse_requirements('requirements.txt'))
 dev_requirements = list(parse_requirements('dev-requirements.txt'))
 dependencies = list(parse_requirements('requirements.txt', dep=True))
-readme = read('README.rst')
+readme = read('README.md')
 changes = read('CHANGES.rst').replace('.. :changelog:', '')
 license = ckanny.__license__
 
