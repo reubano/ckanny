@@ -14,8 +14,8 @@ import ckanutils as api
 from pprint import pprint
 from os import environ
 from time import time
-from manager import Manager
 
+from manager import Manager
 from tabutils import process as tup
 
 from . import datastorer as ds
