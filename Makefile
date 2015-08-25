@@ -26,10 +26,10 @@ require:
 	pip freeze -l | grep -vxFf dev-requirements.txt > requirements.txt
 
 lint:
-	flake8 ckanutils tests
+	flake8 ckanny tests
 
 test:
-	helpers/test
+	python tests/test_script.py
 
 release:
 	sdist wheel upload

@@ -9,14 +9,16 @@ from __future__ import (
     unicode_literals)
 
 import sys
+import ckanutils as api
 
 from pprint import pprint
 from os import environ
 from time import time
 from manager import Manager
+
 from tabutils import process as tup
 
-from . import api, datastorer as ds
+from . import datastorer as ds
 
 manager = Manager()
 

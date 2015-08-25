@@ -50,7 +50,7 @@ def require():
 @manager.command
 def test():
     """Run nose and script tests"""
-    call(p.join(_basedir, 'helpers', 'test'), shell=True)
+    call('python %s' % p.join(_basedir, 'tests', 'test_script.py'), shell=True)
 
 
 @manager.command

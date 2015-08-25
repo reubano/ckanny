@@ -10,6 +10,7 @@ from __future__ import (
 
 import traceback
 import sys
+import ckanutils as api
 
 from os import unlink, getcwd, environ, path as p
 from tempfile import NamedTemporaryFile
@@ -17,8 +18,6 @@ from tempfile import NamedTemporaryFile
 from manager import Manager
 from xattr import xattr
 from tabutils import process as tup, io as tio
-
-from . import api
 
 manager = Manager()
 
@@ -72,7 +71,7 @@ def fetch(resource_id, **kwargs):
             print('saving encoding %s to extended attributes' % r.encoding)
 
         if r.encoding:
-            x['com.ckanutils.encoding'] = r.encoding
+            x['com.ckanny.encoding'] = r.encoding
 
         print(filepath)
     except api.NotAuthorized as err:
