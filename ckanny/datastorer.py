@@ -10,15 +10,16 @@ from __future__ import (
 
 import traceback
 import sys
+import ckanutils as api
 
 from StringIO import StringIO
 from os import unlink, environ, path as p
 from tempfile import NamedTemporaryFile
+
 from manager import Manager
 from xattr import xattr
 from tabutils import process as tup, io as tio
 
-from . import api
 
 manager = Manager()
 
@@ -206,7 +207,7 @@ def upload(source, resource_id=None, **kwargs):
     x = xattr(source)
 
     try:
-        kwargs['encoding'] = x.get('com.ckanutils.encoding')
+        kwargs['encoding'] = x.get('com.ckanny.encoding')
     except IOError:
         pass
 

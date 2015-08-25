@@ -1,8 +1,20 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: sw=4:ts=4:expandtab
 
-""" Miscellaneous CKAN Datastore scripts """
+"""
+ckanny
+~~~~~~
+
+Miscellaneous CKAN utility scripts
+
+Examples:
+    literal blocks::
+
+        python example_google.py
+
+Attributes:
+    module_level_variable1 (int): Module level variables may be documented in
+"""
 
 from __future__ import (
     absolute_import, division, print_function, with_statement,
@@ -10,6 +22,14 @@ from __future__ import (
 
 from manager import Manager
 from . import datastorer, filestorer, hdx
+
+__title__ = 'ckanny'
+__author__ = 'Reuben Cummings'
+__description__ = 'Miscellaneous CKAN utility scripts'
+__email__ = 'reubano@gmail.com'
+__version__ = '0.11.0'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2015 Reuben Cummings'
 
 manager = Manager()
 manager.merge(datastorer.manager, namespace='ds')

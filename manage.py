@@ -50,7 +50,7 @@ def require():
 @manager.command
 def test():
     """Run nose and script tests"""
-    call(p.join(_basedir, 'helpers', 'test'), shell=True)
+    call('python %s' % p.join(_basedir, 'tests', 'test_script.py'), shell=True)
 
 
 @manager.command
@@ -83,7 +83,7 @@ def upload():
 @manager.command
 def sdist():
     """Create a source distribution package"""
-    call(p.join(_basedir, 'helpers', 'sdist'), shell=True)
+    call(p.join(_basedir, 'helpers', 'srcdist'), shell=True)
 
 
 @manager.command

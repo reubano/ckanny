@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/reubano/ckanutils/issues.
+Report bugs at https://github.com/reubano/ckanny/issues.
 
 If you are reporting a bug, please include:
 
@@ -36,13 +36,13 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-CKAN-Utils could always use more documentation, whether as part of the
+ckanny could always use more documentation, whether as part of the
 official docs, in docstrings, or even on the web in blog posts, articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/reubano/ckanutils/issues.
+The best way to send feedback is to file an issue at https://github.com/reubano/ckanny/issues.
 
 If you are proposing a feature:
 
@@ -54,18 +54,18 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `ckanutils` for local development.
+Ready to contribute? Here's how to set up `ckanny` for local development.
 
-1. Fork the `ckanutils` repo on GitHub.
+1. Fork the `ckanny` repo on GitHub.
 2. Clone your fork locally::
 
-    git clone git@github.com:reubano/ckanutils.git
+    git clone git@github.com:reubano/ckanny.git
 
 3. Install your local copy into a `virtualenv`. Assuming you have `virtualenvwrapper` installed, this is how you set up your fork for local development::
 
-    mkvirtualenv --no-site-packages ckanutils
-    cd ckanutils/
-    workon ckanutils
+    mkvirtualenv --no-site-packages ckanny
+    cd ckanny/
+    workon ckanny
     python setup.py develop
     pip install -r dev-requirements.txt
 

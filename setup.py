@@ -3,7 +3,7 @@
 
 import sys
 import re
-import ckanutils
+import ckanny
 
 from os import path as p
 
@@ -51,7 +51,7 @@ dev_requirements = list(parse_requirements('dev-requirements.txt'))
 dependencies = list(parse_requirements('requirements.txt', dep=True))
 readme = read('README.rst')
 changes = read('CHANGES.rst').replace('.. :changelog:', '')
-license = ckanutils.__license__
+license = ckanny.__license__
 
 classifier = {
     'GPL': 'GNU General Public License (GPL)',
@@ -60,13 +60,13 @@ classifier = {
 }
 
 setup(
-    name=ckanutils.__title__,
-    version=ckanutils.__version__,
-    description=ckanutils.__description__,
+    name=ckanny.__title__,
+    version=ckanny.__version__,
+    description=ckanny.__description__,
     long_description=readme + '\n\n' + changes,
-    author=ckanutils.__author__,
-    author_email=ckanutils.__email__,
-    url='https://github.com/reubano/ckanutils',
+    author=ckanny.__author__,
+    author_email=ckanny.__email__,
+    url='https://github.com/reubano/ckanny',
     packages=find_packages(exclude=['docs', 'tests']),
     include_package_data=True,
     install_requires=requirements,
@@ -74,9 +74,9 @@ setup(
     tests_require=dev_requirements,
     license=license,
     zip_safe=False,
-    keywords=ckanutils.__title__,
+    keywords=ckanny.__title__,
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: %s' % classifier[license],
         'Natural Language :: English',
         'Programming Language :: Python :: 2',
