@@ -2,14 +2,13 @@
 
 ## Introduction
 
-ckanny is a [Python library](#library) and [command line interface](#cli) for interacting with remote and local [CKAN](http://ckan.org/) instances. It uses [ckanapi](https://github.com/ckan/ckanapi) under the hood, and is essentially a high level wrapper for it.
+ckanny is a [command line interface](#cli) for interacting with remote and local [CKAN](http://ckan.org/) instances. Under the hood, it uses [ckanutils](https://github.com/reubano/ckanutils).
 
 With ckanny, you can
 
 - Download a CKAN resource
-- Parse structured CSV/XLS/XLSX files and push them into a CKAN DataStore
-- Copy a filestore resource from one ckan instance to another
-- Read and write Uñicôdë text
+- Update a CKAN DataStore from data in the FileStore
+- Copy a FileStore resource from one CKAN instance to another
 - and much more...
 
 ckanny performs smart updates by computing the hash of a file and will only update the datastore if the file has changed. This allows you to schedule a script to run on a frequent basis, e.g., `@hourly` via a cron job, without updating the CKAN instance unnecessarily.
@@ -38,7 +37,6 @@ ckanny comes with a built in command line interface `ckanny`.
 ### Usage
 
      ckanny [<namespace>.]<command> [<args>]
-
 
 ### Examples
 
@@ -113,32 +111,6 @@ optional arguments:
                         .)
 ```
 
-## Library
-
-ckanny may also be used directly from Python.
-
-### Examples
-
-*Fetch a remote resource*
-
-```python
-from ckanny import api
-
-kwargs = {'api_key': 'mykey', 'remote': 'http://demo.ckan.org'}
-resource_id = '36f33846-cb43-438e-95fd-f518104a32ed'
-r, filepath = ckan.fetch_resource(resource_id, filepath='test.csv')
-print(r.encoding)
-```
-
-*Fetch a local resource*
-
-```python
-ckan = api.CKAN(api_key='mykey', remote=None)
-resource_id = '36f33846-cb43-438e-95fd-f518104a32ed'
-r, filepath = ckan.fetch_resource(resource_id, filepath='test.csv')
-print(r.encoding)
-```
-
 ## Configuration
 
 ckanny will use the following [Environment Variables](http://www.cyberciti.biz/faq/set-environment-variable-linux/) if set:
@@ -160,19 +132,9 @@ hash|text
 
 By default the hash table resource will be placed in the package `hash_table`. ckanny will create this package if it doesn't exist. Optionally, you can set the hash table package in the command line with the `-H, --hash-table` option, or in a Python file as the `hash_table` keyword argument to `api.CKAN`.
 
-Examples:
-
-*via the CLI*
+Example:
 
     ckanny ds.update -H custom_hash_table 36f33846-cb43-438e-95fd-f518104a32ed
-
-*via a python file*
-
-```python
-from ckanny import api
-ckan = api.CKAN(hash_table='custom_hash_table')
-hash = ckan.get_hash('36f33846-cb43-438e-95fd-f518104a32ed')
-```
 
 ## Scripts
 
@@ -204,4 +166,4 @@ View [CONTRIBUTING.rst](https://github.com/reubano/ckanny/blob/master/CONTRIBUTI
 
 ## License
 
-ckanny is distributed under the [MIT License](http://opensource.org/licenses/MIT), the same as [ckanapi](https://github.com/ckan/ckanapi).
+ckanny is distributed under the [MIT License](http://opensource.org/licenses/MIT), the same as [ckanutils](https://github.com/reubano/ckanutils).
