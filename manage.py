@@ -64,7 +64,7 @@ def release():
     """Package and upload a release"""
     sdist()
     wheel()
-    upload
+    upload()
 
 
 @manager.command
