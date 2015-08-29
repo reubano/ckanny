@@ -16,6 +16,7 @@ from os import environ
 from time import time
 
 from manager import Manager
+from ckanutils import CKAN
 from tabutils import process as tup
 
 from . import datastorer as ds
@@ -100,7 +101,7 @@ def customize(org_id, **kwargs):
     geojson_id = kwargs.get('geojson')
     topline_id = kwargs.get('topline')
 
-    ckan = api.CKAN(**ckan_kwargs)
+    ckan = CKAN(**ckan_kwargs)
     organization = ckan.organization_show(id=org_id, include_datasets=True)
     org_packages = organization['packages']
     hdx = ckan.organization_show(id='hdx', include_datasets=True)
@@ -202,7 +203,7 @@ def customize(org_id, **kwargs):
 
 def update(three_dub_id, topline_id=None, **kwargs):
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
-    ckan = api.CKAN(**ckan_kwargs)
+    ckan = CKAN(**ckan_kwargs)
     ds.update(topline_id, ckan=ckan) if topline_id else None
     ds.update(three_dub_id, ckan=ckan)
 

@@ -17,6 +17,7 @@ from tempfile import NamedTemporaryFile
 
 from manager import Manager
 from xattr import xattr
+from ckanutils import CKAN
 from tabutils import process as tup, io as tio
 
 manager = Manager()
@@ -54,7 +55,7 @@ def fetch(resource_id, **kwargs):
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
 
     try:
-        ckan = api.CKAN(**ckan_kwargs)
+        ckan = CKAN(**ckan_kwargs)
         r = ckan.fetch_resource(resource_id)
         fkwargs = {
             'headers': r.headers,
@@ -120,8 +121,8 @@ def migrate(resource_id, **kwargs):
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
 
     try:
-        src_ckan = api.CKAN(remote=src_remote, **ckan_kwargs)
-        dest_ckan = api.CKAN(remote=dest_remote, **ckan_kwargs)
+        src_ckan = CKAN(remote=src_remote, **ckan_kwargs)
+        dest_ckan = CKAN(remote=dest_remote, **ckan_kwargs)
         r = src_ckan.fetch_resource(resource_id)
         filepath = NamedTemporaryFile(delete=False).name
         tio.write_file(filepath, r.raw.read(), chunksize=chunksize)
@@ -182,7 +183,7 @@ def upload(source, resource_id=None, package_id=None, **kwargs):
             'Uploading %s to filestore resource %s...' % (source, resource_id))
 
     try:
-        ckan = api.CKAN(**ckan_kwargs)
+        ckan = CKAN(**ckan_kwargs)
     except Exception as err:
         sys.stderr.write('ERROR: %s\n' % str(err))
         traceback.print_exc(file=sys.stdout)

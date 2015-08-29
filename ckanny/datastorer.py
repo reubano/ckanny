@@ -18,6 +18,7 @@ from tempfile import NamedTemporaryFile
 
 from manager import Manager
 from xattr import xattr
+from ckanutils import CKAN
 from tabutils import process as tup, io as tio
 
 
@@ -80,7 +81,7 @@ def update(resource_id, force=None, **kwargs):
     hash_kwargs = {'chunksize': chunk_bytes, 'verbose': verbose}
 
     try:
-        ckan = api.CKAN(**ckan_kwargs)
+        ckan = CKAN(**ckan_kwargs)
         r = ckan.fetch_resource(resource_id)
         filepath = NamedTemporaryFile(delete=False).name
         write_kwargs = {
@@ -215,7 +216,7 @@ def upload(source, resource_id=None, **kwargs):
         print('Using encoding %s' % kwargs['encoding'])
 
     try:
-        ckan = api.CKAN(**ckan_kwargs)
+        ckan = CKAN(**ckan_kwargs)
     except Exception as err:
         sys.stderr.write('ERROR: %s\n' % str(err))
         traceback.print_exc(file=sys.stdout)
@@ -249,7 +250,7 @@ def delete(resource_id, **kwargs):
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
 
     try:
-        ckan = api.CKAN(**ckan_kwargs)
+        ckan = CKAN(**ckan_kwargs)
         ckan.delete_table(resource_id, filters=kwargs.get('filters'))
     except Exception as err:
         sys.stderr.write('ERROR: %s\n' % str(err))
