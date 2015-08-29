@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: sw=4:ts=4:expandtab
 
-""" Miscellaneous CKAN Datastore scripts """
+""" CKAN Datastore management scripts """
 
 from __future__ import (
     absolute_import, division, print_function, with_statement,
