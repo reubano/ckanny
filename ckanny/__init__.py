@@ -21,7 +21,7 @@ from __future__ import (
     unicode_literals)
 
 from manager import Manager
-from . import datastorer, filestorer, hdx
+from . import datastorer, filestorer, package, hdx
 
 __title__ = 'ckanny'
 __author__ = 'Reuben Cummings'
@@ -35,6 +35,7 @@ manager = Manager()
 manager.merge(datastorer.manager, namespace='ds')
 manager.merge(filestorer.manager, namespace='fs')
 manager.merge(hdx.manager, namespace='hdx')
+manager.merge(package.manager, namespace='pk')
 
 
 @manager.command
