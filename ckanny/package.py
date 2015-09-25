@@ -102,10 +102,10 @@ def create(org_id, **kwargs):
     if location and location not in list(groups):
         sys.exit('group name: %s not found!' % location)
 
-    if org_id not in list(organizations):
+    if org_id not in set(organizations):
         sys.exit('organization id: %s not found!' % org_id)
 
-    if license_id not in list(licenses):
+    if license_id not in set(licenses):
         sys.exit('license id: %s not found!' % license_id)
 
     package_kwargs = {
