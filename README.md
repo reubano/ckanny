@@ -7,6 +7,7 @@ ckanny is a [command line interface](#cli) for interacting with remote and local
 With ckanny, you can
 
 - Download a CKAN resource
+- Create a CKAN package
 - Update a CKAN DataStore from data in the FileStore
 - Copy a FileStore resource from one CKAN instance to another
 - and much more...
@@ -64,7 +65,13 @@ available commands:
   [fs]
     fetch                  Downloads a filestore resource
     migrate                Copies a filestore resource from one ckan instance to another
-    upload                 Uploads a file to the filestore of an existing resource
+    upload                 Updates the filestore of an existing resource or creates a new one
+
+  [hdx]
+    customize              Introspects custom organization values
+
+  [pk]
+    create                 Creates a package (aka dataset)
 ```
 
 *show version*
@@ -78,7 +85,6 @@ available commands:
 *show fs.fetch help*
 
     ckanny fs.fetch -h
-
 
 ```bash
 usage: ckanny fs.fetch
@@ -111,6 +117,72 @@ optional arguments:
                         .)
 ```
 
+*create a package*
+
+    ckanny pk.create -k <CKAN_API_KEY> -r <CKAN_URL> <org_id>
+
+*create a package with resources*
+
+    ckanny pk.create -k <CKAN_API_KEY> -r <CKAN_URL> -f 'file1.csv,file2.csv' <org_id>
+
+*show pk.create help*
+
+    ckanny pk.create -h
+
+```bash
+usage: /Users/reubano/.virtualenvs/ckan/bin/ckanny pk.create
+       [-h] [-q] [-u UA] [-k API_KEY]
+       [-r REMOTE] [-e END] [-S START]
+       [-L LOCATION] [-c CAVEATS] [-y TYPE]
+       [-T TAGS] [-t TITLE]
+       [-m {observed,other,census,survey,registry}]
+       [-d DESCRIPTION] [-f FILES] [-s SOURCE]
+       [-l LICENSE_ID]
+       [org_id]
+
+Creates a package (aka dataset)
+
+positional arguments:
+  org_id                the organization id
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -q, --quiet           suppress debug statements
+  -u UA, --ua UA
+                        the user agent (uses `CKAN_USER_AGENT` ENV if
+                        available) (default: None)
+  -k API_KEY, --api-key API_KEY
+                        the api key (uses `CKAN_API_KEY` ENV if available)
+                        (default: None)
+  -r REMOTE, --remote REMOTE
+                        the remote ckan url (uses `CKAN_REMOTE_URL` ENV if
+                        available) (default: None)
+  -e END, --end END
+                        Data end date
+  -S START, --start START
+                        Data start date (default: 09/25/2015)
+  -L LOCATION, --location LOCATION
+                        Location the data represents (default: world)
+  -c CAVEATS, --caveats CAVEATS
+                        Package caveats
+  -y TYPE, --type TYPE
+                        Package type (default: dataset)
+  -T TAGS, --tags TAGS
+                        Comma separated list of tags
+  -t TITLE, --title TITLE
+                        Package title (default: Untitled 2015-09-25
+                        12:36:14.141533)
+  -m {observed,other,census,survey,registry}, --methodology {observed,other,census,survey,registry}
+                        Data collection methodology (default: observed)
+  -d DESCRIPTION, --description DESCRIPTION
+                        Dataset description (default: same as `title`)
+  -f FILES, --files FILES
+                        Comma separated list of file paths to add
+  -s SOURCE, --source SOURCE
+                        Data source (default: Multiple sources)
+  -l LICENSE_ID, --license-id LICENSE_ID
+                        Data license (default: cc-by-igo)
+```
 ## Configuration
 
 ckanny will use the following [Environment Variables](http://www.cyberciti.biz/faq/set-environment-variable-linux/) if set:
@@ -130,7 +202,7 @@ field|type
 datastore_id|text
 hash|text
 
-By default the hash table resource will be placed in the package `hash_table`. ckanny will create this package if it doesn't exist. Optionally, you can set the hash table package in the command line with the `-H, --hash-table` option, or in a Python file as the `hash_table` keyword argument to `api.CKAN`.
+By default the hash table resource will be placed in the package `hash_table`. ckanny will create this package if it doesn't exist. Optionally, you can set the hash table package in the command line with the `-H, --hash-table` option, or in a Python file as the `hash_table` keyword argument to `CKAN`.
 
 Example:
 
