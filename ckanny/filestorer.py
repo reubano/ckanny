@@ -150,8 +150,10 @@ def migrate(resource_id, **kwargs):
 @manager.arg(
     'source', help='the source file path', nargs='?', default=sys.stdin)
 @manager.arg(
-    'resource_id', 'R', help=('the resource id to update (default: source file'
-        ' name)'))
+    'name', 'n', help='the resource name (used to create a new resource)')
+@manager.arg(
+    'resource_id', 'R', help=('the resource id (used to update an existing'
+    ' resource, default: source file name if `package_id` not specified)'))
 @manager.arg(
     'package_id', 'p', help='the package id (used to create a new resource)')
 @manager.arg(
