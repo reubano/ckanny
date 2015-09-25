@@ -79,8 +79,8 @@ def create(org_id, **kwargs):
     groups = ckan.group_list()
 
     title = kwargs.get('title')
-    raw_tags = kwargs.get('tags')
-    tags = [{'state': 'active', 'name': t} for t in raw_tags.split(',')]
+    raw_tags = filter(None, kwargs.get('tags').split(','))
+    tags = [{'state': 'active', 'name': t} for t in raw_tags] or []
     location = kwargs.get('location')
     methodology = kwargs.get('methodology')
     license_id = kwargs.get('license_id')
