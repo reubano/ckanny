@@ -37,6 +37,10 @@ methodologies = {
 
 @manager.arg(
     'org_id', help='the organization id', nargs='?', default=sys.stdin)
+@manager.arg('source', 's', help='Data source', default='Multiple sources')
+@manager.arg('type', 'y', help='Package type', default='dataset')
+@manager.arg('caveats', 'c', help='Package caveats')
+@manager.arg('end', 'e', help='Data end date')
 @manager.arg(
     'remote', 'r', help='the remote ckan url (uses `%s` ENV if available)' %
     api.REMOTE_ENV, default=environ.get(api.REMOTE_ENV))
@@ -47,18 +51,14 @@ methodologies = {
     'ua', 'u', help='the user agent (uses `%s` ENV if available)' % api.UA_ENV,
     default=environ.get(api.UA_ENV, api.DEF_USER_AGENT))
 @manager.arg('license_id', 'l', help='Data license')
-@manager.arg('source', 's', help='Data source', default='Multiple sources')
 @manager.arg('description', 'd', help='Dataset description')
 @manager.arg(
     'methodology', 'm', help='Data collection methodology',
     default='Census', choices=methodologies.keys())
 @manager.arg('title', 't', help='Package title', default='Untitled')
 @manager.arg('tags', 'T', help='Comma separated list of tags')
-@manager.arg('type', 'y', help='Package type', default='dataset')
-@manager.arg('caveats', 'c', help='Package caveats')
 @manager.arg('location', 'L', help='Location the data represents')
 @manager.arg('start', 'S', help='Data start date')
-@manager.arg('end', 'e', help='Data end date')
 @manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
 @manager.command
