@@ -76,7 +76,7 @@ def create(org_id, **kwargs):
 
     licenses = it.imap(itemgetter('id'), ckan.license_list())
     organizations = it.imap(itemgetter('id'), ckan.organization_list())
-    groups = it.imap(itemgetter('id'), ckan.group_list())
+    groups = ckan.group_list()
 
     title = kwargs.get('title')
     raw_tags = kwargs.get('tags')
@@ -99,8 +99,12 @@ def create(org_id, **kwargs):
         {'caveats': kwargs.get('caveats')},
     ]
 
-    if location and location not in list(groups):
+    if location and location in set(groups):
+        group_list = [{'name': location}]
+    elif location:
         sys.exit('group name: %s not found!' % location)
+    else:
+        group_list = []
 
     if org_id not in set(organizations):
         sys.exit('organization id: %s not found!' % org_id)
@@ -117,8 +121,8 @@ def create(org_id, **kwargs):
         'notes': kwargs.get('description') or title,
         'type': kwargs.get('type', 'dataset'),
         'tags': tags,
-        'groups': [{'name': location}] if location else [],
         'extras': extras
+        'groups': group_list,
     }
 
     if verbose:
