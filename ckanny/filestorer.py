@@ -164,8 +164,6 @@ def migrate(resource_id, **kwargs):
     'ua', 'u', help='the user agent (uses `%s` ENV if available)' % api.UA_ENV,
     default=environ.get(api.UA_ENV))
 @manager.arg(
-    'url', 'U', help='treat source as a url', type=bool, default=False)
-@manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
 @manager.command
 def upload(source, resource_id=None, package_id=None, **kwargs):
@@ -189,7 +187,11 @@ def upload(source, resource_id=None, package_id=None, **kwargs):
         traceback.print_exc(file=sys.stdout)
         sys.exit(1)
 
-    resource_kwargs = {'url' if kwargs.get('url') else 'filepath': source}
+    resource_kwargs = {
+        'url' if 'http' in source else 'filepath': source,
+        'name': kwargs.get('name')
+    }
+
     if package_id:
         resource = ckan.create_resource(package_id, **resource_kwargs)
     else:
