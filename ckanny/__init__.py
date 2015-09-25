@@ -21,13 +21,13 @@ from __future__ import (
     unicode_literals)
 
 from manager import Manager
-from . import datastorer, filestorer, hdx
+from . import datastorer, filestorer, package, hdx
 
 __title__ = 'ckanny'
 __author__ = 'Reuben Cummings'
 __description__ = 'Miscellaneous CKAN utility scripts'
 __email__ = 'reubano@gmail.com'
-__version__ = '0.11.3'
+__version__ = '0.12.0'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Reuben Cummings'
 
@@ -35,6 +35,7 @@ manager = Manager()
 manager.merge(datastorer.manager, namespace='ds')
 manager.merge(filestorer.manager, namespace='fs')
 manager.merge(hdx.manager, namespace='hdx')
+manager.merge(package.manager, namespace='pk')
 
 
 @manager.command

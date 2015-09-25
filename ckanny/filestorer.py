@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: sw=4:ts=4:expandtab
 
-""" Miscellaneous CKAN Filestore scripts """
+""" CKAN Filestore management scripts """
 
 from __future__ import (
     absolute_import, division, print_function, with_statement,
@@ -17,6 +17,7 @@ from tempfile import NamedTemporaryFile
 
 from manager import Manager
 from xattr import xattr
+from ckanutils import CKAN
 from tabutils import process as tup, io as tio
 
 manager = Manager()
@@ -54,7 +55,7 @@ def fetch(resource_id, **kwargs):
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
 
     try:
-        ckan = api.CKAN(**ckan_kwargs)
+        ckan = CKAN(**ckan_kwargs)
         r = ckan.fetch_resource(resource_id)
         fkwargs = {
             'headers': r.headers,
@@ -120,8 +121,8 @@ def migrate(resource_id, **kwargs):
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
 
     try:
-        src_ckan = api.CKAN(remote=src_remote, **ckan_kwargs)
-        dest_ckan = api.CKAN(remote=dest_remote, **ckan_kwargs)
+        src_ckan = CKAN(remote=src_remote, **ckan_kwargs)
+        dest_ckan = CKAN(remote=dest_remote, **ckan_kwargs)
         r = src_ckan.fetch_resource(resource_id)
         filepath = NamedTemporaryFile(delete=False).name
         tio.write_file(filepath, r.raw.read(), chunksize=chunksize)
@@ -149,8 +150,10 @@ def migrate(resource_id, **kwargs):
 @manager.arg(
     'source', help='the source file path', nargs='?', default=sys.stdin)
 @manager.arg(
-    'resource_id', 'R', help=('the resource id to update (default: source file'
-        ' name)'))
+    'name', 'n', help='the resource name (used to create a new resource)')
+@manager.arg(
+    'resource_id', 'R', help=('the resource id (used to update an existing'
+    ' resource, default: source file name if `package_id` not specified)'))
 @manager.arg(
     'package_id', 'p', help='the package id (used to create a new resource)')
 @manager.arg(
@@ -162,8 +165,6 @@ def migrate(resource_id, **kwargs):
 @manager.arg(
     'ua', 'u', help='the user agent (uses `%s` ENV if available)' % api.UA_ENV,
     default=environ.get(api.UA_ENV))
-@manager.arg(
-    'url', 'U', help='treat source as a url', type=bool, default=False)
 @manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
 @manager.command
@@ -182,13 +183,17 @@ def upload(source, resource_id=None, package_id=None, **kwargs):
             'Uploading %s to filestore resource %s...' % (source, resource_id))
 
     try:
-        ckan = api.CKAN(**ckan_kwargs)
+        ckan = CKAN(**ckan_kwargs)
     except Exception as err:
         sys.stderr.write('ERROR: %s\n' % str(err))
         traceback.print_exc(file=sys.stdout)
         sys.exit(1)
 
-    resource_kwargs = {'url' if kwargs.get('url') else 'filepath': source}
+    resource_kwargs = {
+        'url' if 'http' in source else 'filepath': source,
+        'name': kwargs.get('name')
+    }
+
     if package_id:
         resource = ckan.create_resource(package_id, **resource_kwargs)
     else:
