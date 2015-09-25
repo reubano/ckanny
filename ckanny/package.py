@@ -19,6 +19,7 @@ import itertools as it
 from os import environ
 from operator import itemgetter
 from dateutil.parser import parse
+from datetime import datetime as dt
 
 from slugify import slugify
 from manager import Manager
@@ -37,9 +38,23 @@ methodologies = {
 
 @manager.arg(
     'org_id', help='the organization id', nargs='?', default=sys.stdin)
+@manager.arg('license_id', 'l', help='Data license', default='cc-by-igo')
 @manager.arg('source', 's', help='Data source', default='Multiple sources')
+@manager.arg(
+    'description', 'd', help='Dataset description (default: same as `title`)')
+@manager.arg(
+    'methodology', 'm', help='Data collection methodology',
+    default='observed', choices=methodologies.keys())
+@manager.arg(
+    'title', 't', help='Package title', default='Untitled %s' % dt.utcnow())
+@manager.arg('tags', 'T', help='Comma separated list of tags', default='')
 @manager.arg('type', 'y', help='Package type', default='dataset')
 @manager.arg('caveats', 'c', help='Package caveats')
+@manager.arg(
+    'location', 'L', help='Location the data represents', default='world')
+@manager.arg(
+    'start', 'S', help='Data start date',
+    default=dt.utcnow().strftime('%m/%d/%Y'))
 @manager.arg('end', 'e', help='Data end date')
 @manager.arg(
     'remote', 'r', help='the remote ckan url (uses `%s` ENV if available)' %
@@ -50,15 +65,6 @@ methodologies = {
 @manager.arg(
     'ua', 'u', help='the user agent (uses `%s` ENV if available)' % api.UA_ENV,
     default=environ.get(api.UA_ENV, api.DEF_USER_AGENT))
-@manager.arg('license_id', 'l', help='Data license')
-@manager.arg('description', 'd', help='Dataset description')
-@manager.arg(
-    'methodology', 'm', help='Data collection methodology',
-    default='Census', choices=methodologies.keys())
-@manager.arg('title', 't', help='Package title', default='Untitled')
-@manager.arg('tags', 'T', help='Comma separated list of tags')
-@manager.arg('location', 'L', help='Location the data represents')
-@manager.arg('start', 'S', help='Data start date')
 @manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
 @manager.command
@@ -77,7 +83,7 @@ def create(org_id, **kwargs):
     tags = [{'state': 'active', 'name': t} for t in raw_tags.split(',')]
     location = kwargs.get('location')
     methodology = kwargs.get('methodology')
-    license_id = kwargs.get('license_id', 'cc-by-igo')
+    license_id = kwargs.get('license_id')
     raw_start = kwargs.get('start')
     raw_end = kwargs.get('end')
 
@@ -108,7 +114,7 @@ def create(org_id, **kwargs):
         'license_id': license_id,
         'owner_org': org_id,
         'dataset_source': kwargs.get('source'),
-        'notes': kwargs.get('description'),
+        'notes': kwargs.get('description') or title,
         'type': kwargs.get('type', 'dataset'),
         'tags': tags,
         'groups': [{'name': location}] if location else [],
