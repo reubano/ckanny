@@ -16,11 +16,14 @@ import sys
 import ckanutils as api
 import itertools as it
 
+from collections import defaultdict
 from os import environ
 from operator import itemgetter
 from dateutil.parser import parse
 from datetime import datetime as dt
+from os import path as p
 
+from pprint import pprint
 from slugify import slugify
 from manager import Manager
 from ckanutils import CKAN
@@ -36,10 +39,59 @@ methodologies = {
 }
 
 
+def make_rkwargs(path, **kwargs):
+    if 'docs.google.com' in path:
+        url, f = path, None
+        def_name = path.split('gid=')[1].split('&')[0]
+    elif 'http' in path:
+        url, f = path, None
+        def_name = p.basename(path)
+    else:
+        url = None
+
+        try:
+            f = open(path, 'rb')
+        except TypeError:
+            f = path
+            def_name = None
+        else:
+            def_name = p.basename(path)
+
+    try:
+        # copy/pasted from utils... fix later
+        def_format = path.split('format=')[1].split('&')[0]
+    except IndexError:
+        def_format = None
+    try:
+        def_format = def_format or p.splitext(path)[1].split('.')[1]
+    except IndexError:
+        # no file extension given, e.g., a tempfile
+        def_format = 'csv'
+
+    # Will get `ckan.logic.ValidationError` if url isn't set
+    defaults = {
+        'url': url or 'http://example.com',
+        'name': def_name,
+        'format': def_format,
+    }
+
+    resource = defaultdict(str, **defaults)
+    resource.update(kwargs)
+
+    if f:
+        resource.update({'upload': f})
+        f.close()
+
+    return resource
+
+
 @manager.arg(
     'org_id', help='the organization id', nargs='?', default=sys.stdin)
 @manager.arg('license_id', 'l', help='Data license', default='cc-by-igo')
 @manager.arg('source', 's', help='Data source', default='Multiple sources')
+@manager.arg(
+    'files', 'f', help='Comma separated list of file paths to add',
+    default='')
 @manager.arg(
     'description', 'd', help='Dataset description (default: same as `title`)')
 @manager.arg(
@@ -88,16 +140,14 @@ def create(org_id, **kwargs):
     raw_end = kwargs.get('end')
 
     if raw_start:
-        start = parse(raw_start).strftime('%d/%m/%Y')
-        end = parse(raw_end).strftime('%d/%m/%Y') if raw_end else ''
+        start = parse(str(raw_start)).strftime('%m/%d/%Y')
+    else:
+        date = None
 
-    extras = [
-        {'methodology': methodologies[methodology]},
-        {'methodology_other': 'Other' if methodology == 'other' else None},
-        {'dataset_date': '%s-%s' % (start, end) if start else ''},
-        {'dataset_source': kwargs.get('source')},
-        {'caveats': kwargs.get('caveats')},
-    ]
+    if raw_start and raw_end:
+        date = '%s-%s' % (start, parse(str(raw_end)).strftime('%m/%d/%Y'))
+    elif raw_start:
+        date = start
 
     if location and location in set(groups):
         group_list = [{'name': location}]
@@ -112,6 +162,9 @@ def create(org_id, **kwargs):
     if license_id not in set(licenses):
         sys.exit('license id: %s not found!' % license_id)
 
+    files = filter(None, kwargs.get('files').split(','))
+    resource_list = map(make_rkwargs, files) or []
+
     package_kwargs = {
         'title': title,
         'name': kwargs.get('name', slugify(title)),
@@ -121,14 +174,28 @@ def create(org_id, **kwargs):
         'notes': kwargs.get('description') or title,
         'type': kwargs.get('type', 'dataset'),
         'tags': tags,
-        'extras': extras
+        'resources': resource_list,
+        'package_creator': ckan.user['name'],
         'groups': group_list,
+        'dataset_date': date,
+        'caveats': kwargs.get('caveats'),
+        'methodology': methodologies[methodology],
+        'methodology_other': 'Other' if methodology == 'other' else None,
     }
 
     if verbose:
         print('Submitting your package request.')
+        pprint(package_kwargs)
 
-    print(ckan.package_create(**package_kwargs))
+    try:
+        package = ckan.package_create(**package_kwargs)
+    except api.ValidationError as e:
+        exit(e)
+    else:
+        if verbose:
+            pprint(package)
+
+        print(package['id'])
 
 
 def update(source, resource_id=None, **kwargs):
