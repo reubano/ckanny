@@ -39,13 +39,13 @@ methodologies = {
 }
 
 
-def make_rkwargs(path, **kwargs):
+def make_rkwargs(path, name=None, **kwargs):
     if 'docs.google.com' in path:
         url, f = path, None
-        def_name = path.split('gid=')[1].split('&')[0]
+        name = name or path.split('gid=')[1].split('&')[0]
     elif 'http' in path:
         url, f = path, None
-        def_name = p.basename(path)
+        name = name or p.basename(path)
     else:
         url = None
 
@@ -53,9 +53,8 @@ def make_rkwargs(path, **kwargs):
             f = open(path, 'rb')
         except TypeError:
             f = path
-            def_name = None
         else:
-            def_name = p.basename(path)
+            name = name or p.basename(path)
 
     try:
         # copy/pasted from utils... fix later
@@ -63,16 +62,16 @@ def make_rkwargs(path, **kwargs):
     except IndexError:
         def_format = None
     try:
-        def_format = def_format or p.splitext(path)[1].split('.')[1]
+        _format = def_format or p.splitext(path)[1].split('.')[1]
     except IndexError:
         # no file extension given, e.g., a tempfile
-        def_format = 'csv'
+        _format = 'csv'
 
     # Will get `ckan.logic.ValidationError` if url isn't set
     defaults = {
         'url': url or 'http://example.com',
-        'name': def_name,
-        'format': def_format,
+        'name': name,
+        'format': _format,
     }
 
     resource = defaultdict(str, **defaults)
@@ -91,6 +90,9 @@ def make_rkwargs(path, **kwargs):
 @manager.arg('source', 's', help='Data source', default='Multiple sources')
 @manager.arg(
     'files', 'f', help='Comma separated list of file paths to add',
+    default='')
+@manager.arg(
+    'names', 'n', help='Comma separated list of file names (requires `files`)',
     default='')
 @manager.arg(
     'description', 'd', help='Dataset description (default: same as `title`)')
@@ -131,6 +133,9 @@ def create(org_id, **kwargs):
     groups = ckan.group_list()
 
     title = kwargs.get('title')
+    _names = (kwargs.get('names') or '').strip('"').strip("'")
+    _files = (kwargs.get('files') or '').strip('"').strip("'")
+
     raw_tags = filter(None, kwargs.get('tags').split(','))
     tags = [{'state': 'active', 'name': t} for t in raw_tags] or []
     location = kwargs.get('location')
@@ -162,8 +167,9 @@ def create(org_id, **kwargs):
     if license_id not in set(licenses):
         sys.exit('license id: %s not found!' % license_id)
 
-    files = filter(None, kwargs.get('files').split(','))
-    resource_list = map(make_rkwargs, files) or []
+    files = filter(None, _files.split(','))
+    names = filter(None, _names.split(','))
+    resource_list = list(it.starmap(make_rkwargs, zip(files, names))) or []
 
     package_kwargs = {
         'title': title,
