@@ -120,6 +120,8 @@ def make_rkwargs(path, name=None, **kwargs):
     'ua', 'u', help='the user agent (uses `%s` ENV if available)' % api.UA_ENV,
     default=environ.get(api.UA_ENV, api.DEF_USER_AGENT))
 @manager.arg(
+    'private', 'p', help='Make package private', type=bool, default=False)
+@manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
 @manager.command
 def create(org_id, **kwargs):
@@ -199,11 +201,16 @@ def create(org_id, **kwargs):
         package = ckan.package_create(**package_kwargs)
     except api.ValidationError as e:
         exit(e)
-    else:
-        if verbose:
-            pprint(package)
 
-        print(package['id'])
+    if kwargs.get('private'):
+        org = package['organization']
+        ckan.package_privatize(org_id=org['id'], datasets=[package['id']])
+
+    if verbose:
+        print('Your package response.')
+        pprint(package)
+
+    print(package['id'])
 
 
 def update(source, resource_id=None, **kwargs):
