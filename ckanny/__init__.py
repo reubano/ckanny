@@ -41,8 +41,7 @@ manager.merge(package.manager, namespace='pk')
 @manager.command
 def ver():
     """Show ckanny version"""
-    from . import __version__ as version
-    print('v%s' % version)
+    print('v%s' % __version__)
 
 
 if __name__ == '__main__':
