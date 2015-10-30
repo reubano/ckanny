@@ -136,7 +136,11 @@ def create(org_id, **kwargs):
     org_names = it.imap(itemgetter('name'), orgs)
     groups = ckan.group_list()
 
-    title = kwargs.get('title')
+    title = (kwargs.get('title') or '').strip('"').strip("'")
+    name = (kwargs.get('name') or '').strip('"').strip("'") or slugify(title)
+    source = (kwargs.get('source') or '').strip('"').strip("'")
+    description = (kwargs.get('description') or '').strip('"').strip("'")
+    caveats = (kwargs.get('caveats') or '').strip('"').strip("'")
     _names = (kwargs.get('names') or '').strip('"').strip("'")
     _files = (kwargs.get('files') or '').strip('"').strip("'")
 
@@ -177,18 +181,18 @@ def create(org_id, **kwargs):
 
     package_kwargs = {
         'title': title,
-        'name': kwargs.get('name', slugify(title)),
+        'name': name,
         'license_id': license_id,
         'owner_org': org_id,
-        'dataset_source': kwargs.get('source'),
-        'notes': kwargs.get('description') or title,
+        'dataset_source': source,
+        'notes': description or title,
         'type': kwargs.get('type', 'dataset'),
         'tags': tags,
         'resources': resource_list,
         'package_creator': ckan.user['name'],
         'groups': group_list,
         'dataset_date': date,
-        'caveats': kwargs.get('caveats'),
+        'caveats': caveats,
         'methodology': methodologies[methodology],
         'methodology_other': 'Other' if methodology == 'other' else None,
     }
