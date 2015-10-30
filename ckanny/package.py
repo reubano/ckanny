@@ -129,7 +129,9 @@ def create(org_id, **kwargs):
     ckan = CKAN(**ckan_kwargs)
 
     licenses = it.imap(itemgetter('id'), ckan.license_list())
-    organizations = it.imap(itemgetter('id'), ckan.organization_list())
+    orgs = ckan.organization_list()
+    org_ids = it.imap(itemgetter('id'), orgs)
+    org_names = it.imap(itemgetter('name'), orgs)
     groups = ckan.group_list()
 
     title = kwargs.get('title')
@@ -161,7 +163,7 @@ def create(org_id, **kwargs):
     else:
         group_list = []
 
-    if org_id not in set(organizations):
+    if org_id not in set(it.chain(org_ids, org_names)):
         sys.exit('organization id: %s not found!' % org_id)
 
     if license_id not in set(licenses):
