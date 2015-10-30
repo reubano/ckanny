@@ -39,13 +39,13 @@ methodologies = {
 }
 
 
-def make_rkwargs(path, **kwargs):
+def make_rkwargs(path, name=None, **kwargs):
     if 'docs.google.com' in path:
         url, f = path, None
-        def_name = path.split('gid=')[1].split('&')[0]
+        name = name or path.split('gid=')[1].split('&')[0]
     elif 'http' in path:
         url, f = path, None
-        def_name = p.basename(path)
+        name = name or p.basename(path)
     else:
         url = None
 
@@ -53,9 +53,8 @@ def make_rkwargs(path, **kwargs):
             f = open(path, 'rb')
         except TypeError:
             f = path
-            def_name = None
         else:
-            def_name = p.basename(path)
+            name = name or p.basename(path)
 
     try:
         # copy/pasted from utils... fix later
@@ -63,16 +62,16 @@ def make_rkwargs(path, **kwargs):
     except IndexError:
         def_format = None
     try:
-        def_format = def_format or p.splitext(path)[1].split('.')[1]
+        _format = def_format or p.splitext(path)[1].split('.')[1]
     except IndexError:
         # no file extension given, e.g., a tempfile
-        def_format = 'csv'
+        _format = 'csv'
 
     # Will get `ckan.logic.ValidationError` if url isn't set
     defaults = {
         'url': url or 'http://example.com',
-        'name': def_name,
-        'format': def_format,
+        'name': name,
+        'format': _format,
     }
 
     resource = defaultdict(str, **defaults)
@@ -93,6 +92,9 @@ def make_rkwargs(path, **kwargs):
     'files', 'f', help='Comma separated list of file paths to add',
     default='')
 @manager.arg(
+    'names', 'n', help='Comma separated list of file names (requires `files`)',
+    default='')
+@manager.arg(
     'description', 'd', help='Dataset description (default: same as `title`)')
 @manager.arg(
     'methodology', 'm', help='Data collection methodology',
@@ -109,16 +111,18 @@ def make_rkwargs(path, **kwargs):
     default=dt.utcnow().strftime('%m/%d/%Y'))
 @manager.arg('end', 'e', help='Data end date')
 @manager.arg(
-    'remote', 'r', help='the remote ckan url (uses `%s` ENV if available)' %
+    'remote', 'r', help='The remote ckan url (uses `%s` ENV if available)' %
     api.REMOTE_ENV, default=environ.get(api.REMOTE_ENV))
 @manager.arg(
-    'api_key', 'k', help='the api key (uses `%s` ENV if available)' %
+    'api_key', 'k', help='The api key (uses `%s` ENV if available)' %
     api.API_KEY_ENV, default=environ.get(api.API_KEY_ENV))
 @manager.arg(
-    'ua', 'u', help='the user agent (uses `%s` ENV if available)' % api.UA_ENV,
+    'ua', 'u', help='The user agent (uses `%s` ENV if available)' % api.UA_ENV,
     default=environ.get(api.UA_ENV, api.DEF_USER_AGENT))
 @manager.arg(
-    'quiet', 'q', help='suppress debug statements', type=bool, default=False)
+    'private', 'p', help='Make package private', type=bool, default=False)
+@manager.arg(
+    'quiet', 'q', help='Suppress debug statements', type=bool, default=False)
 @manager.command
 def create(org_id, **kwargs):
     """Creates a package (aka dataset)"""
@@ -127,10 +131,19 @@ def create(org_id, **kwargs):
     ckan = CKAN(**ckan_kwargs)
 
     licenses = it.imap(itemgetter('id'), ckan.license_list())
-    organizations = it.imap(itemgetter('id'), ckan.organization_list())
+    orgs = ckan.organization_list()
+    org_ids = it.imap(itemgetter('id'), orgs)
+    org_names = it.imap(itemgetter('name'), orgs)
     groups = ckan.group_list()
 
-    title = kwargs.get('title')
+    title = (kwargs.get('title') or '').strip('"').strip("'")
+    name = (kwargs.get('name') or '').strip('"').strip("'") or slugify(title)
+    source = (kwargs.get('source') or '').strip('"').strip("'")
+    description = (kwargs.get('description') or '').strip('"').strip("'")
+    caveats = (kwargs.get('caveats') or '').strip('"').strip("'")
+    _names = (kwargs.get('names') or '').strip('"').strip("'")
+    _files = (kwargs.get('files') or '').strip('"').strip("'")
+
     raw_tags = filter(None, kwargs.get('tags').split(','))
     tags = [{'state': 'active', 'name': t} for t in raw_tags] or []
     location = kwargs.get('location')
@@ -156,29 +169,30 @@ def create(org_id, **kwargs):
     else:
         group_list = []
 
-    if org_id not in set(organizations):
+    if org_id not in set(it.chain(org_ids, org_names)):
         sys.exit('organization id: %s not found!' % org_id)
 
     if license_id not in set(licenses):
         sys.exit('license id: %s not found!' % license_id)
 
-    files = filter(None, kwargs.get('files').split(','))
-    resource_list = map(make_rkwargs, files) or []
+    files = filter(None, _files.split(','))
+    names = filter(None, _names.split(','))
+    resource_list = list(it.starmap(make_rkwargs, zip(files, names))) or []
 
     package_kwargs = {
         'title': title,
-        'name': kwargs.get('name', slugify(title)),
+        'name': name,
         'license_id': license_id,
         'owner_org': org_id,
-        'dataset_source': kwargs.get('source'),
-        'notes': kwargs.get('description') or title,
+        'dataset_source': source,
+        'notes': description or title,
         'type': kwargs.get('type', 'dataset'),
         'tags': tags,
         'resources': resource_list,
         'package_creator': ckan.user['name'],
         'groups': group_list,
         'dataset_date': date,
-        'caveats': kwargs.get('caveats'),
+        'caveats': caveats,
         'methodology': methodologies[methodology],
         'methodology_other': 'Other' if methodology == 'other' else None,
     }
@@ -186,16 +200,24 @@ def create(org_id, **kwargs):
     if verbose:
         print('Submitting your package request.')
         pprint(package_kwargs)
+        print('\n')
 
     try:
         package = ckan.package_create(**package_kwargs)
     except api.ValidationError as e:
         exit(e)
-    else:
-        if verbose:
-            pprint(package)
 
-        print(package['id'])
+    if kwargs.get('private'):
+        org = package['organization']
+        ckan.package_privatize(org_id=org['id'], datasets=[package['id']])
+
+    if verbose:
+        print('Your package response.')
+        pprint(package)
+        print('\n')
+
+    print(package['id'])
+    print('\n')
 
 
 def update(source, resource_id=None, **kwargs):

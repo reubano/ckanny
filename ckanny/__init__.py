@@ -27,7 +27,7 @@ __title__ = 'ckanny'
 __author__ = 'Reuben Cummings'
 __description__ = 'Miscellaneous CKAN utility scripts'
 __email__ = 'reubano@gmail.com'
-__version__ = '0.13.0'
+__version__ = '0.14.0'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Reuben Cummings'
 
@@ -41,8 +41,7 @@ manager.merge(package.manager, namespace='pk')
 @manager.command
 def ver():
     """Show ckanny version"""
-    from . import __version__ as version
-    print('v%s' % version)
+    print('v%s' % __version__)
 
 
 if __name__ == '__main__':
