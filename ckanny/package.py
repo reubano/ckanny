@@ -111,18 +111,18 @@ def make_rkwargs(path, name=None, **kwargs):
     default=dt.utcnow().strftime('%m/%d/%Y'))
 @manager.arg('end', 'e', help='Data end date')
 @manager.arg(
-    'remote', 'r', help='the remote ckan url (uses `%s` ENV if available)' %
+    'remote', 'r', help='The remote ckan url (uses `%s` ENV if available)' %
     api.REMOTE_ENV, default=environ.get(api.REMOTE_ENV))
 @manager.arg(
-    'api_key', 'k', help='the api key (uses `%s` ENV if available)' %
+    'api_key', 'k', help='The api key (uses `%s` ENV if available)' %
     api.API_KEY_ENV, default=environ.get(api.API_KEY_ENV))
 @manager.arg(
-    'ua', 'u', help='the user agent (uses `%s` ENV if available)' % api.UA_ENV,
+    'ua', 'u', help='The user agent (uses `%s` ENV if available)' % api.UA_ENV,
     default=environ.get(api.UA_ENV, api.DEF_USER_AGENT))
 @manager.arg(
     'private', 'p', help='Make package private', type=bool, default=False)
 @manager.arg(
-    'quiet', 'q', help='suppress debug statements', type=bool, default=False)
+    'quiet', 'q', help='Suppress debug statements', type=bool, default=False)
 @manager.command
 def create(org_id, **kwargs):
     """Creates a package (aka dataset)"""
@@ -196,6 +196,7 @@ def create(org_id, **kwargs):
     if verbose:
         print('Submitting your package request.')
         pprint(package_kwargs)
+        print('\n')
 
     try:
         package = ckan.package_create(**package_kwargs)
@@ -209,8 +210,10 @@ def create(org_id, **kwargs):
     if verbose:
         print('Your package response.')
         pprint(package)
+        print('\n')
 
     print(package['id'])
+    print('\n')
 
 
 def update(source, resource_id=None, **kwargs):
