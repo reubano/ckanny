@@ -290,7 +290,7 @@ def update(pid, **kwargs):
     if any(package_kwargs.values()):
         # combine keys by returning the last non-empty result
         pred = lambda key: True
-        last = lambda pair: filter(None, pair)[-1]
+        last = lambda pair: filter(None, pair)[-1] if any(pair) else None
         records = [old_package, package_kwargs]
         new_kwargs = pr.merge(records, pred=pred, op=last)
 
