@@ -278,7 +278,7 @@ def update(pid, **kwargs):
         'groups': group_list,
         'dataset_date': date,
         'caveats': kw.caveats,
-        'methodology': methods.get(kw.methodology),
+        'methodology': methods.get(kw.methodology, 'Other'),
         'methodology_other': methods.get(kw.methodology) or kw.methodology,
     }
 
