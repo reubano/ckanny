@@ -27,7 +27,7 @@ __title__ = 'ckanny'
 __author__ = 'Reuben Cummings'
 __description__ = 'Miscellaneous CKAN utility scripts'
 __email__ = 'reubano@gmail.com'
-__version__ = '0.14.0'
+__version__ = '0.15.0'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Reuben Cummings'
 
