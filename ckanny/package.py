@@ -27,7 +27,7 @@ from pprint import pprint
 from slugify import slugify
 from manager import Manager
 from ckanutils import CKAN
-from tabutils import fntools as ft
+from tabutils import fntools as ft, process as pr
 
 manager = Manager()
 
@@ -208,9 +208,107 @@ def create(org_id, **kwargs):
     print('\n')
 
 
-def update(source, resource_id=None, **kwargs):
+@manager.arg('pid', help='the package id', nargs='?', default=sys.stdin)
+@manager.arg('license_id', 'l', help='Data license')
+@manager.arg('source', 's', help='Data source')
+@manager.arg('description', 'd', help='Dataset description')
+@manager.arg('methodology', 'm', help='Data collection methodology')
+@manager.arg('title', 't', help='Package title')
+@manager.arg('tags', 'T', help='Comma separated list of tags')
+@manager.arg('type', 'y', help='Package type')
+@manager.arg('caveats', 'c', help='Package caveats')
+@manager.arg('location', 'L', help='Location the data represents')
+@manager.arg('start', 'S', help='Data start date')
+@manager.arg('end', 'e', help='Data end date')
+@manager.arg(
+    'remote', 'r', help='The remote ckan url (uses `%s` ENV if available)' %
+    api.REMOTE_ENV, default=environ.get(api.REMOTE_ENV))
+@manager.arg(
+    'api_key', 'k', help='The api key (uses `%s` ENV if available)' %
+    api.API_KEY_ENV, default=environ.get(api.API_KEY_ENV))
+@manager.arg(
+    'ua', 'u', help='The user agent (uses `%s` ENV if available)' % api.UA_ENV,
+    default=environ.get(api.UA_ENV, api.DEF_USER_AGENT))
+@manager.arg(
+    'private', 'p', help='Make package private', type=bool, default=False)
+@manager.arg(
+    'quiet', 'q', help='Suppress debug statements', type=bool, default=False)
+@manager.command
+def update(pid, **kwargs):
     """Updates a package (aka dataset)"""
-    pass
+    kw = ft.Objectify(kwargs, type='dataset')
+    verbose = not kw.quiet
+    ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
+    ckan = CKAN(**ckan_kwargs)
+
+    licenses = it.imap(itemgetter('id'), ckan.license_list())
+    groups = ckan.group_list()
+
+    raw_tags = filter(None, kw.tags.split(',')) if kw.tags else []
+    tags = [{'state': 'active', 'name': t} for t in raw_tags]
+
+    if kw.start:
+        start = parse(str(kw.start)).strftime('%m/%d/%Y')
+    else:
+        date = None
+
+    if kw.start and kw.end:
+        date = '%s-%s' % (start, parse(str(kw.end)).strftime('%m/%d/%Y'))
+    elif kw.start:
+        date = start
+
+    if kw.location and kw.location in set(groups):
+        group_list = [{'name': kw.location}]
+    elif kw.location:
+        sys.exit('group name: %s not found!' % kw.location)
+    else:
+        group_list = []
+
+    if kw.license_id and kw.license_id not in set(licenses):
+        sys.exit('license id: %s not found!' % kw.license_id)
+
+    package_kwargs = {
+        'title': kw.title,
+        'name': kw.name,
+        'license_id': kw.license_id,
+        'dataset_source': kw.source,
+        'notes': kw.description or kw.title,
+        'type': kw.type,
+        'tags': tags,
+        'groups': group_list,
+        'dataset_date': date,
+        'caveats': kw.caveats,
+        'methodology': methods.get(kw.methodology),
+        'methodology_other': methods.get(kw.methodology) or kw.methodology,
+    }
+
+    try:
+        old_package = ckan.package_show(id=pid)
+    except api.ValidationError as e:
+        exit(e)
+
+    if any(package_kwargs.values()):
+        # combine keys by returning the last non-empty result
+        pred = lambda key: True
+        last = lambda pair: filter(None, pair)[-1]
+        records = [old_package, package_kwargs]
+        new_kwargs = pr.merge(records, pred=pred, op=last)
+
+        if verbose:
+            print('Submitting your package request.')
+            pprint(new_kwargs)
+            print('\n')
+
+        package = ckan.package_update(**new_kwargs)
+    else:
+        package = old_package
+
+    if kw.private:
+        org = package['organization']
+        ckan.package_privatize(org_id=org['id'], datasets=[package['id']])
+
+    print(package['id'])
+    print('\n')
 
 
 def delete(resource_id, **kwargs):
