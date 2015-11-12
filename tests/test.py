@@ -34,8 +34,9 @@ def main(verbose=False):
 
     # Test command usage
     commands = [
-        'ds.delete', 'ds.update', 'ds.upload', 'fs.fetch', 'fs.migrate',
-        'fs.upload']
+        'ds.delete', 'ds.update', 'ds.upload',
+        'fs.fetch', 'fs.migrate', 'fs.upload',
+        'pk.create', 'pk.update']
 
     for command in commands:
         result = env.run('%s %s --help' % (script, command))
