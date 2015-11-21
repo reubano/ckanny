@@ -53,17 +53,20 @@ def fetch(resource_id, **kwargs):
     name_from_id = kwargs.get('name_from_id')
     chunksize = kwargs.get('chunksize_bytes')
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
+    ckan = CKAN(**ckan_kwargs)
 
     try:
-        ckan = CKAN(**ckan_kwargs)
         r = ckan.fetch_resource(resource_id)
+    except api.NotAuthorized as err:
+        sys.exit('ERROR: %s\n' % str(err))
+    else:
         fkwargs = {
             'headers': r.headers,
             'name_from_id': name_from_id,
             'resource_id': resource_id}
 
         filepath = tup.make_filepath(filepath, **fkwargs)
-        tio.write_file(filepath, r.iter_content, chunksize=chunksize)
+        tio.write(filepath, r.iter_content, chunksize=chunksize)
 
         # save encoding to extended attributes
         x = xattr(filepath)
@@ -75,13 +78,6 @@ def fetch(resource_id, **kwargs):
             x['com.ckanny.encoding'] = r.encoding
 
         print(filepath)
-    except api.NotAuthorized as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        sys.exit(1)
-    except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        traceback.print_exc(file=sys.stdout)
-        sys.exit(1)
 
 
 @manager.arg(
@@ -109,31 +105,28 @@ def migrate(resource_id, **kwargs):
     src_remote, dest_remote = kwargs['src_remote'], kwargs['dest_remote']
 
     if src_remote == dest_remote:
-        sys.stderr.write(
+        msg = (
             'ERROR: `dest-remote` of %s is the same as `src-remote` of %s.\n'
             'The dest and src remotes must be different.\n' % (src_remote,
             dest_remote))
 
-        sys.exit(1)
+        sys.exit(msg)
 
     verbose = not kwargs['quiet']
     chunksize = kwargs['chunksize_bytes']
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
+    src_ckan = CKAN(remote=src_remote, **ckan_kwargs)
+    dest_ckan = CKAN(remote=dest_remote, **ckan_kwargs)
 
     try:
-        src_ckan = CKAN(remote=src_remote, **ckan_kwargs)
-        dest_ckan = CKAN(remote=dest_remote, **ckan_kwargs)
         r = src_ckan.fetch_resource(resource_id)
         filepath = NamedTemporaryFile(delete=False).name
-        tio.write_file(filepath, r.raw.read(), chunksize=chunksize)
     except api.NotAuthorized as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        sys.exit(1)
+        sys.exit('ERROR: %s\n' % str(err))
     except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        traceback.print_exc(file=sys.stdout)
-        sys.exit(1)
+        sys.exit('ERROR: %s\n' % str(err))
     else:
+        tio.write(filepath, r.raw.read(), chunksize=chunksize)
         resource = dest_ckan.update_filestore(resource_id, filepath=filepath)
 
         if resource and verbose:
@@ -182,12 +175,7 @@ def upload(source, resource_id=None, package_id=None, **kwargs):
         print(
             'Uploading %s to filestore resource %s...' % (source, resource_id))
 
-    try:
-        ckan = CKAN(**ckan_kwargs)
-    except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        traceback.print_exc(file=sys.stdout)
-        sys.exit(1)
+    ckan = CKAN(**ckan_kwargs)
 
     resource_kwargs = {
         'url' if 'http' in source else 'filepath': source,
