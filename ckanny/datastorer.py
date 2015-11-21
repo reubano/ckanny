@@ -79,26 +79,19 @@ def update(resource_id, force=None, **kwargs):
     chunk_bytes = kwargs.get('chunk_bytes', api.CHUNKSIZE_BYTES)
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
     hash_kwargs = {'chunksize': chunk_bytes, 'verbose': verbose}
+    ckan = CKAN(**ckan_kwargs)
 
     try:
-        ckan = CKAN(**ckan_kwargs)
         r = ckan.fetch_resource(resource_id)
         filepath = NamedTemporaryFile(delete=False).name
+    except (api.NotFound, api.NotAuthorized) as err:
+        sys.exit('ERROR: %s\n' % str(err))
         write_kwargs = {
             'length': r.headers.get('content-length'),
             'chunksize': chunk_bytes
         }
 
         tio.write_file(filepath, r.iter_content, **write_kwargs)
-    except (api.NotFound, api.NotAuthorized) as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        filepath = None
-        sys.exit(1)
-    except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        traceback.print_exc(file=sys.stdout)
-        filepath = None
-        sys.exit(1)
     else:
         try:
             old_hash = ckan.get_hash(resource_id)
@@ -215,19 +208,12 @@ def upload(source, resource_id=None, **kwargs):
     if verbose and kwargs['encoding']:
         print('Using encoding %s' % kwargs['encoding'])
 
-    try:
-        ckan = CKAN(**ckan_kwargs)
-    except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        traceback.print_exc(file=sys.stdout)
-        sys.exit(1)
+    ckan = CKAN(**ckan_kwargs)
 
     if ckan.update_datastore(resource_id, source, **kwargs):
         print('Success! Resource %s uploaded.' % resource_id)
     else:
-        sys.stderr.write('ERROR: resource %s not uploaded.' % resource_id)
-        traceback.print_exc(file=sys.stdout)
-        sys.exit(1)
+        sys.exit('ERROR: resource %s not uploaded.' % resource_id)
 
 
 @manager.arg(
@@ -248,14 +234,8 @@ def upload(source, resource_id=None, **kwargs):
 def delete(resource_id, **kwargs):
     """Deletes a datastore table"""
     ckan_kwargs = {k: v for k, v in kwargs.items() if k in api.CKAN_KEYS}
-
-    try:
-        ckan = CKAN(**ckan_kwargs)
-        ckan.delete_table(resource_id, filters=kwargs.get('filters'))
-    except Exception as err:
-        sys.stderr.write('ERROR: %s\n' % str(err))
-        traceback.print_exc(file=sys.stdout)
-        sys.exit(1)
+    ckan = CKAN(**ckan_kwargs)
+    ckan.delete_table(resource_id, filters=kwargs.get('filters'))
 
 
 if __name__ == '__main__':
