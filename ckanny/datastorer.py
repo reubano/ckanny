@@ -8,12 +8,11 @@ from __future__ import (
     absolute_import, division, print_function, with_statement,
     unicode_literals)
 
-import traceback
 import sys
 import ckanutils as api
 
 from StringIO import StringIO
-from os import unlink, environ, path as p
+from os import environ, path as p
 from tempfile import SpooledTemporaryFile
 
 from manager import Manager
