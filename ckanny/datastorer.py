@@ -60,6 +60,8 @@ def get_message(changed, force):
 @manager.arg(
     'chunksize_bytes', 'C', help='number of bytes to read/write at a time',
     type=int, default=api.CHUNKSIZE_BYTES)
+@manager.arg(
+    'first_row', 'F', help='the first row (zero indexed)', type=int, default=0)
 @manager.arg('primary_key', 'p', help="Unique field(s), e.g., 'field1,field2'")
 @manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
