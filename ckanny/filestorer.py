@@ -66,7 +66,7 @@ def fetch(resource_id, **kwargs):
             'resource_id': resource_id}
 
         filepath = tup.make_filepath(filepath, **fkwargs)
-        tio.write_file(filepath, r.iter_content, chunksize=chunksize)
+        tio.write(filepath, r.iter_content, chunksize=chunksize)
 
         # save encoding to extended attributes
         x = xattr(filepath)
@@ -121,12 +121,12 @@ def migrate(resource_id, **kwargs):
     try:
         r = src_ckan.fetch_resource(resource_id)
         filepath = NamedTemporaryFile(delete=False).name
-        tio.write_file(filepath, r.raw.read(), chunksize=chunksize)
     except api.NotAuthorized as err:
         sys.exit('ERROR: %s\n' % str(err))
     except Exception as err:
         sys.exit('ERROR: %s\n' % str(err))
     else:
+        tio.write(filepath, r.raw.read(), chunksize=chunksize)
         resource = dest_ckan.update_filestore(resource_id, filepath=filepath)
 
         if resource and verbose:

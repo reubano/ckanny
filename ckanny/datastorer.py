@@ -14,12 +14,12 @@ import ckanutils as api
 
 from StringIO import StringIO
 from os import unlink, environ, path as p
-from tempfile import NamedTemporaryFile
+from tempfile import SpooledTemporaryFile
 
 from manager import Manager
 from xattr import xattr
 from ckanutils import CKAN
-from tabutils import process as tup, io as tio
+from tabutils import io as tio
 
 
 manager = Manager()
@@ -83,16 +83,17 @@ def update(resource_id, force=None, **kwargs):
 
     try:
         r = ckan.fetch_resource(resource_id)
-        filepath = NamedTemporaryFile(delete=False).name
     except (api.NotFound, api.NotAuthorized) as err:
         sys.exit('ERROR: %s\n' % str(err))
+    else:
+        f = SpooledTemporaryFile(suffix='.xlsx', mode='r+b')
         write_kwargs = {
             'length': r.headers.get('content-length'),
             'chunksize': chunk_bytes
         }
 
-        tio.write_file(filepath, r.iter_content, **write_kwargs)
-    else:
+        tio.write(f, r.iter_content, **write_kwargs)
+
         try:
             old_hash = ckan.get_hash(resource_id)
         except api.NotFound as err:
@@ -124,7 +125,7 @@ def update(resource_id, force=None, **kwargs):
             ckan.create_hash_table(verbose)
             old_hash = ckan.get_hash(resource_id)
 
-        new_hash = tup.hash_file(filepath, **hash_kwargs)
+        new_hash = tio.hash_file(f, **hash_kwargs)
         changed = new_hash != old_hash if old_hash else True
 
         if verbose:
@@ -135,7 +136,7 @@ def update(resource_id, force=None, **kwargs):
 
         kwargs['encoding'] = r.encoding
         kwargs['content_type'] = r.headers['content-type']
-        updated = ckan.update_datastore(resource_id, filepath, **kwargs)
+        updated = ckan.update_datastore(resource_id, f, **kwargs)
 
         if updated and verbose:
             print('Success! Resource %s updated.' % resource_id)
@@ -143,14 +144,7 @@ def update(resource_id, force=None, **kwargs):
         if updated and changed:
             ckan.update_hash_table(resource_id, new_hash, verbose)
         elif not updated:
-            sys.stderr.write('ERROR: resource %s not updated.' % resource_id)
-            traceback.print_exc(file=sys.stdout)
-            sys.exit(1)
-    finally:
-        if filepath and verbose:
-            print('Removing tempfile...')
-
-        unlink(filepath) if filepath else None
+            sys.exit('ERROR: resource %s not updated.' % resource_id)
 
 
 @manager.arg(
