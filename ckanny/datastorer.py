@@ -68,8 +68,7 @@ def get_message(changed, force):
 @manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
 @manager.arg(
-    'type_cast', 't', help="type cast values based on field names.",
-    type=bool, default=False)
+    'type_cast', 't', help="type cast values", type=bool, default=False)
 @manager.arg(
     'sanitize', 's', help='underscorify and lowercase field names', type=bool,
     default=False)
@@ -181,8 +180,7 @@ def update(resource_id, force=None, **kwargs):
 @manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
 @manager.arg(
-    'type_cast', 't', help="type cast values based on field names.",
-    type=bool, default=False)
+    'type_cast', 't', help="type cast values", type=bool, default=False)
 @manager.command
 def upload(source, resource_id=None, **kwargs):
     """Uploads a file to a datastore table"""
