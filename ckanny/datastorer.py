@@ -171,6 +171,8 @@ def update(resource_id, force=None, **kwargs):
     'chunksize_rows', 'c', help='number of rows to write at a time',
     type=int, default=api.CHUNKSIZE_ROWS)
 @manager.arg(
+    'first_row', 'F', help='the first row (zero indexed)', type=int, default=0)
+@manager.arg(
     'first_col', 'o', help='the first row (zero indexed)',
     type=int, default=0)
 @manager.arg('primary_key', 'p', help="Unique field(s), e.g., 'field1,field2'")
