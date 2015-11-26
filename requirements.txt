@@ -1,4 +1,4 @@
 manage.py==0.2.10
 xattr==0.7.5
-tabutils==0.19.3
-ckanutils==0.14.2
+tabutils==0.22.1
+ckanutils==0.14.6
