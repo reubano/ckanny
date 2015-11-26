@@ -61,6 +61,9 @@ def get_message(changed, force):
     type=int, default=api.CHUNKSIZE_BYTES)
 @manager.arg(
     'first_row', 'F', help='the first row (zero indexed)', type=int, default=0)
+@manager.arg(
+    'first_col', 'o', help='the first row (zero indexed)',
+    type=int, default=0)
 @manager.arg('primary_key', 'p', help="Unique field(s), e.g., 'field1,field2'")
 @manager.arg(
     'quiet', 'q', help='suppress debug statements', type=bool, default=False)
@@ -168,6 +171,9 @@ def update(resource_id, force=None, **kwargs):
 @manager.arg(
     'chunksize_rows', 'c', help='number of rows to write at a time',
     type=int, default=api.CHUNKSIZE_ROWS)
+@manager.arg(
+    'first_col', 'o', help='the first row (zero indexed)',
+    type=int, default=0)
 @manager.arg('primary_key', 'p', help="Unique field(s), e.g., 'field1,field2'")
 @manager.arg(
     'sanitize', 's', help='underscorify and lowercase field names', type=bool,
