@@ -20,7 +20,6 @@ from xattr import xattr
 from ckanutils import CKAN
 from tabutils import io as tio
 
-
 manager = Manager()
 
 

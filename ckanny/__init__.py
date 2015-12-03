@@ -23,11 +23,12 @@ from __future__ import (
 from manager import Manager
 from . import datastorer, filestorer, package, hdx
 
+__version__ = '0.17.1'
+
 __title__ = 'ckanny'
 __author__ = 'Reuben Cummings'
 __description__ = 'Miscellaneous CKAN utility scripts'
 __email__ = 'reubano@gmail.com'
-__version__ = '0.17.0'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Reuben Cummings'
 
@@ -42,7 +43,6 @@ manager.merge(package.manager, namespace='pk')
 def ver():
     """Show ckanny version"""
     print('v%s' % __version__)
-
 
 if __name__ == '__main__':
     manager.main()
