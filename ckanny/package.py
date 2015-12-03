@@ -1,7 +1,3 @@
-# Not found
-# sub_national: True
-# quality_confirmed: False
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: sw=4:ts=4:expandtab

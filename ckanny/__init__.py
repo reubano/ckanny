@@ -43,6 +43,5 @@ def ver():
     """Show ckanny version"""
     print('v%s' % __version__)
 
-
 if __name__ == '__main__':
     manager.main()
