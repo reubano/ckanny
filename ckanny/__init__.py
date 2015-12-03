@@ -23,11 +23,12 @@ from __future__ import (
 from manager import Manager
 from . import datastorer, filestorer, package, hdx
 
+__version__ = '0.17.0'
+
 __title__ = 'ckanny'
 __author__ = 'Reuben Cummings'
 __description__ = 'Miscellaneous CKAN utility scripts'
 __email__ = 'reubano@gmail.com'
-__version__ = '0.17.0'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Reuben Cummings'
 
