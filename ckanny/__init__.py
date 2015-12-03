@@ -23,7 +23,7 @@ from __future__ import (
 from manager import Manager
 from . import datastorer, filestorer, package, hdx
 
-__version__ = '0.17.1'
+__version__ = '0.17.2'
 
 __title__ = 'ckanny'
 __author__ = 'Reuben Cummings'
