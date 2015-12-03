@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import re
 import ckanny
+import pkutils
 
 from os import path as p
 
@@ -12,61 +12,26 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-
-def read(filename, parent=None):
-    parent = (parent or __file__)
-
-    try:
-        with open(p.join(p.dirname(parent), filename)) as f:
-            return f.read()
-    except IOError:
-        return ''
-
-
-def parse_requirements(filename, parent=None, dep=False):
-    parent = (parent or __file__)
-    filepath = p.join(p.dirname(parent), filename)
-    content = read(filename, parent)
-
-    for line_number, line in enumerate(content.splitlines(), 1):
-        candidate = line.strip()
-
-        if candidate.startswith('-r'):
-            args = [candidate[2:].strip(), filepath, dep]
-
-            for item in parse_requirements(*args):
-                yield item
-        elif not dep and '#egg=' in candidate:
-            yield re.sub('.*#egg=(.*)-(.*)', r'\1==\2', candidate)
-        elif dep and '#egg=' in candidate:
-            yield candidate.replace('-e ', '')
-        elif not dep:
-            yield candidate
-
-# Avoid byte-compiling the shipped template
 sys.dont_write_bytecode = True
-
-requirements = list(parse_requirements('requirements.txt'))
-dev_requirements = list(parse_requirements('dev-requirements.txt'))
-dependencies = list(parse_requirements('requirements.txt', dep=True))
-readme = read('README.md')
-changes = read('CHANGES.rst').replace('.. :changelog:', '')
+requirements = list(pkutils.parse_requirements('requirements.txt'))
+dependencies = list(pkutils.parse_requirements('requirements.txt', dep=True))
+dev_requirements = list(pkutils.parse_requirements('dev-requirements.txt'))
+readme = pkutils.read('README.md')
+changes = pkutils.read('CHANGES.rst').replace('.. :changelog:', '')
 license = ckanny.__license__
-
-classifier = {
-    'GPL': 'GNU General Public License (GPL)',
-    'MIT': 'MIT License',
-    'BSD': 'BSD License'
-}
+version = ckanny.__version__
+title = ckanny.__title__
+gh = 'https://github.com/reubano'
 
 setup(
-    name=ckanny.__title__,
-    version=ckanny.__version__,
+    name=title,
+    version=version,
     description=ckanny.__description__,
     long_description=readme + '\n\n' + changes,
     author=ckanny.__author__,
     author_email=ckanny.__email__,
-    url='https://github.com/reubano/ckanny',
+    url='%s/%s' % (gh, title),
+    download_url='%s/%s/downloads/%s*.tgz' % (gh, title, title),
     packages=find_packages(exclude=['docs', 'tests']),
     include_package_data=True,
     install_requires=requirements,
@@ -74,18 +39,19 @@ setup(
     tests_require=dev_requirements,
     license=license,
     zip_safe=False,
-    keywords=ckanny.__title__,
+    keywords=[title],
+    package_data={},
     classifiers=[
+        pkutils.LICENSES[license],
         'Development Status :: 4 - Beta',
-        'License :: OSI Approved :: %s' % classifier[license],
         'Natural Language :: English',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
-        'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
+        'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux',
     ],
     platforms=['MacOS X', 'Windows', 'Linux'],
